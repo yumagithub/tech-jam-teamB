@@ -28,6 +28,8 @@ export default function ReviewPage() {
   const [reviewerName, setReviewerName] = useState('');
   const [isGourmetMeister, setIsGourmetMeister] = useState(false);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     if (restaurantId) {
       const fetchRestaurantDetails = async () => {
@@ -50,11 +52,40 @@ export default function ReviewPage() {
     }
   }, [restaurantId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend API
-    console.log({ restaurantId, title, review, reviewerName, isGourmetMeister });
-    alert('レビューを投稿しました！ (コンソールでデータを確認してください)');
+    setIsSubmitting(true);
+
+    const reviewData = { restaurantId, title, review, reviewerName, isGourmetMeister };
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit review');
+      }
+
+      alert('レビューが正常に投稿されました！');
+      // Clear the form
+      setTitle('');
+      setReview('');
+      setReviewerName('');
+      setIsGourmetMeister(false);
+      // Optionally, redirect the user
+      // window.location.href = `/restaurants/${restaurantId}`;
+
+    } catch (error) {
+      console.error(error);
+      alert('レビューの投稿に失敗しました。');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -127,7 +158,9 @@ export default function ReviewPage() {
                 グルメマイスターですか？
               </label>
             </div>
-            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-lg">レビューを投稿する</Button>
+            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-lg" disabled={isSubmitting}>
+              {isSubmitting ? '投稿中...' : 'レビューを投稿する'}
+            </Button>
           </form>
         </CardContent>
       </Card>
