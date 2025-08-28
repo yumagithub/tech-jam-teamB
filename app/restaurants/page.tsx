@@ -1,13 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import Link from "next/link";
+import Image from "next/image";
 
 // Define the types for the API response
 interface Shop {
@@ -26,14 +38,15 @@ interface Shop {
   };
   catch: string;
   address: string;
+  party_capacity: string;
 }
 
 export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<Shop[]>([]);
-  const [keyword, setKeyword] = useState('');
-  const [budget, setBudget] = useState('');
-  const [genre, setGenre] = useState('');
-  const [partyCapacity, setPartyCapacity] = useState('');
+  const [keyword, setKeyword] = useState("");
+  const [budget, setBudget] = useState("");
+  const [genre, setGenre] = useState("");
+  const [partyCapacity, setPartyCapacity] = useState("");
   const [loading, setLoading] = useState(true);
 
   const fetchRestaurants = async () => {
@@ -48,7 +61,7 @@ export default function RestaurantsPage() {
       const data = await response.json();
       setRestaurants(data.shop || []);
     } catch (error) {
-      console.error('Failed to fetch restaurants:', error);
+      console.error("Failed to fetch restaurants:", error);
     }
     setLoading(false);
   };
@@ -95,7 +108,12 @@ export default function RestaurantsPage() {
             className="bg-gray-700 border-gray-600"
           />
           {/* Genre Select would go here - needs genre master API */}
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Search</Button>
+          <Button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700"
+          >
+            Search
+          </Button>
         </form>
       </aside>
 
@@ -103,7 +121,9 @@ export default function RestaurantsPage() {
         <header className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold">Gourmet Navigator</h1>
           <Link href="/restaurants/review" passHref>
-            <Button className="bg-green-600 hover:bg-green-700">Post a Review</Button>
+            <Button className="bg-green-600 hover:bg-green-700">
+              Post a Review
+            </Button>
           </Link>
         </header>
 
@@ -114,24 +134,42 @@ export default function RestaurantsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {restaurants.map((shop) => (
-              <Card key={shop.id} className="bg-gray-800 border-gray-700 overflow-hidden">
+              <Card
+                key={shop.id}
+                className="bg-gray-800 border-gray-700 overflow-hidden"
+              >
                 <Link href={`/restaurants/${shop.id}`} passHref>
                   <div className="cursor-pointer">
-                    <Image src={shop.photo.pc.l} alt={shop.name} width={400} height={300} className="w-full h-48 object-cover"/>
-                    <CardHeader>
-                      <CardTitle className="truncate">{shop.name}</CardTitle>
+                    <Image
+                      src={shop.photo.pc.l}
+                      alt={shop.name}
+                      width={400}
+                      height={300}
+                      className="w-full h-48 object-cover"
+                    />
+                    <CardHeader className="mt-4">
+                      <CardTitle className="truncate text-gray-100">
+                        {shop.name}
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
-                      <p className="text-sm text-gray-400 truncate">{shop.catch}</p>
-                      <div className="flex items-center gap-2">
+                    <CardContent className="mt-0.5 space-y-2">
+                      <p className="text-sm text-gray-300 truncate">
+                        {shop.catch}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary">{shop.genre.name}</Badge>
                         <Badge variant="secondary">{shop.budget.name}</Badge>
+                        <Badge variant="secondary">
+                          収容人数: {shop.party_capacity}
+                        </Badge>
                       </div>
-                      <p className="text-sm text-gray-400 truncate">{shop.address}</p>
+                      <p className="text-sm text-gray-300 truncate">
+                        {shop.address}
+                      </p>
                     </CardContent>
-                    <CardFooter className="flex justify-between items-center">
-                        <Button size="sm">Been there!</Button>
-                        <span className="text-sm text-gray-400">0 Reviews</span>
+                    <CardFooter className="mt-4 flex justify-between items-center">
+                      <Button size="sm">Been there!</Button>
+                      <span className="text-sm text-gray-400">0 Reviews</span>
                     </CardFooter>
                   </div>
                 </Link>
