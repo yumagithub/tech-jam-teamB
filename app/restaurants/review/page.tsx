@@ -16,23 +16,23 @@ export default function ReviewPage() {
     e.preventDefault();
     // Here you would typically send the data to your backend API
     console.log({ restaurantName, tags, review, reviewerName });
-    alert('Review submitted! (Check console for data)');
+    alert('レビューを投稿しました！ (コンソールでデータを確認してください)');
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl bg-gray-800 border-gray-700">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center">Post a Review</CardTitle>
+          <CardTitle className="text-3xl font-bold text-center">レビューを投稿する</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="restaurantName">Restaurant Name</label>
+              <label htmlFor="restaurantName">レストラン名</label>
               <Input
                 id="restaurantName"
                 type="text"
-                placeholder="Search for a restaurant..."
+                placeholder="レストランを検索..."
                 value={restaurantName}
                 onChange={(e) => setRestaurantName(e.target.value)}
                 className="bg-gray-700 border-gray-600"
@@ -40,11 +40,11 @@ export default function ReviewPage() {
               {/* In a real app, this would be a search input that uses the Shop Search API */}
             </div>
             <div className="space-y-2">
-              <label htmlFor="tags">Tags</label>
+              <label htmlFor="tags">タグ</label>
               <Input
                 id="tags"
                 type="text"
-                placeholder="e.g., Good for dates, Quiet, Good value"
+                placeholder="例: デートに最適, 静か, コスパが良い"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 className="bg-gray-700 border-gray-600"
@@ -54,24 +54,24 @@ export default function ReviewPage() {
               <label htmlFor="review">Review</label>
               <Textarea
                 id="review"
-                placeholder="Write your review here..."
+                placeholder="レビューをここに書いてください..."
                 value={review}
                 onChange={(e) => setReview(e.target.value)}
                 className="bg-gray-700 border-gray-600 min-h-[150px]"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="reviewerName">Your Name</label>
+              <label htmlFor="reviewerName">あなたの名前</label>
               <Input
                 id="reviewerName"
                 type="text"
-                placeholder="Your Name"
+                placeholder="名前を入力してください"
                 value={reviewerName}
                 onChange={(e) => setReviewerName(e.target.value)}
                 className="bg-gray-700 border-gray-600"
               />
             </div>
-            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-lg">Submit Review</Button>
+            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-lg">レビューを投稿する</Button>
           </form>
         </CardContent>
       </Card>
