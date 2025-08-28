@@ -9,10 +9,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'imgfp.hotp.jp',
-        port: '',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "imgfp.hotp.jp",
+        port: "",
+        pathname: "/**",
       },
     ],
   },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +49,7 @@ export default function RestaurantsPage() {
   const [partyCapacity, setPartyCapacity] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchRestaurants = async () => {
+  const fetchRestaurants = useCallback(async () => {
     setLoading(true);
     let query = `keyword=${encodeURIComponent(keyword)}`;
     if (budget) query += `&budget=${budget}`;
@@ -64,11 +64,12 @@ export default function RestaurantsPage() {
       console.error("Failed to fetch restaurants:", error);
     }
     setLoading(false);
-  };
+  }, [keyword, budget, genre, partyCapacity]);
 
   useEffect(() => {
     fetchRestaurants();
-  }, []);
+    setGenre("");
+  }, [fetchRestaurants]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
