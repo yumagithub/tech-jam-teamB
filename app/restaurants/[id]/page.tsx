@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import Link from 'next/link';
 
 // Define the type for a single shop
 interface Shop {
@@ -108,8 +109,17 @@ export default function RestaurantDetailPage() {
               <p>Closed: {restaurant.close}</p>
             </div>
             <a href={restaurant.urls.pc} target="_blank" rel="noopener noreferrer">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">View on Hotpepper</Button>
+              <Button className="w-full bg-blue-600 hover:bg-blue-700">ホットペッパーで見る</Button>
             </a>
+            <Link
+            href={`/review/${restaurant.id}`}
+            passHref
+            className="block mt-4"
+          >
+            <Button className="w-full bg-green-600 hover:bg-green-700">
+              このお店のレビューを投稿する
+            </Button>
+          </Link>
           </div>
         </div>
 
