@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Define the type for a single shop to ensure type safety
 interface Shop {
@@ -21,10 +22,11 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // States for the review form fields from the base layout
-  const [tags, setTags] = useState('');
+  // States for the review form fields
+  const [title, setTitle] = useState('');
   const [review, setReview] = useState('');
   const [reviewerName, setReviewerName] = useState('');
+  const [isGourmetMeister, setIsGourmetMeister] = useState(false);
 
   useEffect(() => {
     if (restaurantId) {
@@ -51,7 +53,7 @@ export default function ReviewPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Here you would typically send the data to your backend API
-    console.log({ restaurantId, tags, review, reviewerName });
+    console.log({ restaurantId, title, review, reviewerName, isGourmetMeister });
     alert('レビューを投稿しました！ (コンソールでデータを確認してください)');
   };
 
@@ -82,18 +84,19 @@ export default function ReviewPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="tags">タグ</label>
+              <label htmlFor="title">レビュータイトル</label>
               <Input
-                id="tags"
+                id="title"
                 type="text"
-                placeholder="例: デートに最適, 静か, コスパが良い"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
+                placeholder="例: 最高の沖縄そば！"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 className="bg-gray-700 border-gray-600"
+                required
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="review">レビュー</label>
+              <label htmlFor="review">レビュー内容</label>
               <Textarea
                 id="review"
                 placeholder="レビューをここに書いてください..."
@@ -112,7 +115,17 @@ export default function ReviewPage() {
                 value={reviewerName}
                 onChange={(e) => setReviewerName(e.target.value)}
                 className="bg-gray-700 border-gray-600"
+                required
               />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id="isGourmetMeister" checked={isGourmetMeister} onCheckedChange={(checked) => setIsGourmetMeister(Boolean(checked))} />
+              <label
+                htmlFor="isGourmetMeister"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                グルメマイスターですか？
+              </label>
             </div>
             <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-lg">レビューを投稿する</Button>
           </form>
