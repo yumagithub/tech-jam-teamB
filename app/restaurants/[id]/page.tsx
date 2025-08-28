@@ -61,7 +61,7 @@ export default function RestaurantDetailPage() {
             setRestaurant(data.shop[0]);
           }
         } catch (error) {
-          console.error('Failed to fetch restaurant details:', error);
+          console.error('レストランの詳細取得に失敗しました:', error);
         }
         setLoading(false);
       };
@@ -96,15 +96,15 @@ export default function RestaurantDetailPage() {
               <Badge variant="secondary">{restaurant.budget.name}</Badge>
             </div>
             <div>
-              <h3 className="font-semibold">Address</h3>
+              <h3 className="font-semibold">住所</h3>
               <p>{restaurant.address}</p>
             </div>
             <div>
-              <h3 className="font-semibold">Access</h3>
+              <h3 className="font-semibold">アクセス</h3>
               <p>{restaurant.access}</p>
             </div>
             <div>
-              <h3 className="font-semibold">Hours</h3>
+              <h3 className="font-semibold">営業時間</h3>
               <p>{restaurant.open}</p>
               <p>Closed: {restaurant.close}</p>
             </div>
@@ -148,10 +148,10 @@ export default function RestaurantDetailPage() {
         {/* Placeholder for internal reviews */}
         <Card className="mt-8 bg-gray-800 border-gray-700">
             <CardHeader>
-                <CardTitle>Internal Reviews</CardTitle>
+                <CardTitle>内部レビュー</CardTitle>
             </CardHeader>
             <CardContent>
-                <p>No internal reviews yet.</p>
+                <p>まだ内部レビューはありません。</p>
             </CardContent>
         </Card>
       </div>
