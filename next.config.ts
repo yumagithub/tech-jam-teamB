@@ -6,6 +6,17 @@ const nextConfig: NextConfig = {
   // 最小限の実行環境を生成し、Dockerイメージサイズを大幅に削減します
   output: "standalone",
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "imgfp.hotp.jp",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
+
   // 既存の設定...
 };
 
