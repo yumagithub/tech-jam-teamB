@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 // Define the type for a single shop
 interface Shop {
   id: string;
@@ -42,30 +44,52 @@ interface Shop {
   shop_detail_memo: string;
 }
 
+// Define the type for a single review
+interface Review {
+  id: number;
+  title: string;
+  reviewer_name: string;
+  is_gourmet_meister: boolean;
+  body: string;
+  created_at: string;
+}
+
 export default function RestaurantDetailPage() {
   const params = useParams();
   const { id } = params;
   const [restaurant, setRestaurant] = useState<Shop | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
-      const fetchRestaurantDetail = async () => {
+      const fetchDetailsAndReviews = async () => {
         setLoading(true);
         try {
-          // We need to create this API route
-          const response = await fetch(`/api/restaurants/${id}`);
-          const data = await response.json();
-          // The API returns a list even for ID search
-          if (data.shop && data.shop.length > 0) {
-            setRestaurant(data.shop[0]);
+          // Fetch restaurant details and reviews in parallel
+          const [resDetails, resReviews] = await Promise.all([
+            fetch(`/api/restaurants/${id}`),
+            fetch(`/api/reviews/${id}`),
+          ]);
+
+          if (!resDetails.ok) throw new Error('Failed to fetch restaurant details');
+          const dataDetails = await resDetails.json();
+          if (dataDetails.shop && dataDetails.shop.length > 0) {
+            setRestaurant(dataDetails.shop[0]);
+          } else {
+            throw new Error('Restaurant not found');
           }
+
+          if (!resReviews.ok) throw new Error('Failed to fetch reviews');
+          const dataReviews = await resReviews.json();
+          setReviews(dataReviews);
+
         } catch (error) {
-          console.error('レストランの詳細取得に失敗しました:', error);
+          console.error('Failed to fetch data:', error);
         }
         setLoading(false);
       };
-      fetchRestaurantDetail();
+      fetchDetailsAndReviews();
     }
   }, [id]);
 
@@ -145,14 +169,38 @@ export default function RestaurantDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Placeholder for internal reviews */}
         <Card className="mt-8 bg-gray-800 border-gray-700">
-            <CardHeader>
-                <CardTitle>内部レビュー</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p>まだ内部レビューはありません。</p>
-            </CardContent>
+          <CardHeader>
+            <CardTitle>内部レビュー</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <div key={review.id} className="p-4 rounded-lg bg-gray-700/50 border border-gray-600">
+                  <div className="flex items-center mb-2">
+                    <Avatar className="h-8 w-8 mr-3">
+                      <AvatarFallback>{review.reviewer_name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-grow">
+                      <h4 className="font-semibold text-lg">{review.title}</h4>
+                      <div className="flex items-center text-sm text-gray-400">
+                        <span>{review.reviewer_name}</span>
+                        {review.is_gourmet_meister && (
+                          <Badge variant="outline" className="ml-2 border-amber-400 text-amber-400">グルメマイスター</Badge>
+                        )}
+                      </div>
+                    </div>
+                    <time className="text-xs text-gray-500">
+                      {new Date(review.created_at).toLocaleDateString()}
+                    </time>
+                  </div>
+                  <p className="text-gray-300 whitespace-pre-wrap">{review.body}</p>
+                </div>
+              ))
+            ) : (
+              <p>まだ内部レビューはありません。</p>
+            )}
+          </CardContent>
         </Card>
       </div>
     </div>
