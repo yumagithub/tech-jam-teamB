@@ -121,11 +121,18 @@ export default function RestaurantsPage() {
       <main className="flex-1 p-6">
         <header className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold">Gourmet Navigator</h1>
-          <Link href="/restaurants/review" passHref>
-            <Button className="bg-green-600 hover:bg-green-700">
-              Post a Review
-            </Button>
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link href="/restaurants/review" passHref>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                Post a Review
+              </Button>
+            </Link>
+            <Link href="/schedule" passHref>
+              <Button className="bg-green-600 hover:bg-green-700">
+                Adjust Schedule
+              </Button>
+            </Link>
+          </div>
         </header>
 
         {loading ? (
