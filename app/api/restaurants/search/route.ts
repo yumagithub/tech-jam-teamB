@@ -7,6 +7,8 @@ export async function GET(req: NextRequest) {
   const budget = searchParams.get('budget');
   const genre = searchParams.get('genre');
   const party_capacity = searchParams.get('party_capacity');
+  const start = searchParams.get('start') || '1';
+  const count = searchParams.get('count') || '10'; // Default to 10, will be overridden by frontend
 
   const HOTPEPPER_API_KEY = process.env.HOTPEPPER_API_KEY;
 
@@ -15,7 +17,7 @@ export async function GET(req: NextRequest) {
   }
   const LARGE_AREA = 'Z098'; // Naha
 
-  let apiUrl = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=${HOTPEPPER_API_KEY}&large_area=${LARGE_AREA}&format=json`;
+  let apiUrl = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=${HOTPEPPER_API_KEY}&large_area=${LARGE_AREA}&format=json&start=${start}&count=${count}`;
 
   if (keyword) {
     apiUrl += `&keyword=${encodeURIComponent(keyword)}`;

@@ -21,6 +21,8 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 
+import { cn } from "@/lib/utils";
+
 // Define the types for the API response
 interface Shop {
   id: string;
@@ -41,6 +43,11 @@ interface Shop {
   party_capacity: string;
 }
 
+interface ApiResults {
+  results_available: string;
+  shop: Shop[];
+}
+
 export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<Shop[]>([]);
   const [keyword, setKeyword] = useState("");
@@ -48,33 +55,47 @@ export default function RestaurantsPage() {
   const [genre, setGenre] = useState("");
   const [partyCapacity, setPartyCapacity] = useState("");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const resultsPerPage = 20;
 
-  const fetchRestaurants = useCallback(async () => {
+  const fetchRestaurants = useCallback(async (page: number) => {
     setLoading(true);
-    let query = `keyword=${encodeURIComponent(keyword)}`;
+    const start = (page - 1) * resultsPerPage + 1;
+    let query = `keyword=${encodeURIComponent(keyword)}&count=${resultsPerPage}&start=${start}`;
     if (budget) query += `&budget=${budget}`;
     if (genre) query += `&genre=${genre}`;
     if (partyCapacity) query += `&party_capacity=${partyCapacity}`;
 
     try {
       const response = await fetch(`/api/restaurants/search?${query}`);
-      const data = await response.json();
+      const data: ApiResults = await response.json();
       setRestaurants(data.shop || []);
+      setTotalResults(parseInt(data.results_available, 10) || 0);
     } catch (error) {
       console.error("Failed to fetch restaurants:", error);
+      setRestaurants([]);
+      setTotalResults(0);
     }
     setLoading(false);
   }, [keyword, budget, genre, partyCapacity]);
 
   useEffect(() => {
-    fetchRestaurants();
-    setGenre("");
-  }, [fetchRestaurants]);
+    fetchRestaurants(currentPage);
+  }, [fetchRestaurants, currentPage]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchRestaurants();
+    setCurrentPage(1); // Reset to first page on new search
+    fetchRestaurants(1);
   };
+
+  const handlePageChange = (newPage: number) => {
+    window.scrollTo(0, 0);
+    setCurrentPage(newPage);
+  };
+
+  const totalPages = Math.ceil(totalResults / resultsPerPage);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col md:flex-row">
@@ -135,13 +156,13 @@ export default function RestaurantsPage() {
           </div>
         </header>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <p>Loading...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {restaurants.map((shop) => (
+        <div
+          className={cn(
+            "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity",
+            { "opacity-50": loading },
+          )}
+        >
+          {restaurants.map((shop) => (
               <Card
                 key={shop.id}
                 className="bg-gray-800 border-gray-700 overflow-hidden"
@@ -184,7 +205,25 @@ export default function RestaurantsPage() {
               </Card>
             ))}
           </div>
-        )}
+
+        {/* Pagination Controls */}
+        <div className="flex justify-center items-center mt-8 space-x-4">
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || loading}
+          >
+            前へ
+          </Button>
+          <span className="text-gray-300">
+            ページ {currentPage} / {totalPages}
+          </span>
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages || loading}
+          >
+            次へ
+          </Button>
+        </div>
       </main>
     </div>
   );
