@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 // Define the type for a single shop
 interface Shop {
@@ -110,7 +111,7 @@ export default function RestaurantDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
+    <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8 overflow-x-hidden">
       <div className="max-w-4xl mx-auto">
         <header className="mb-8">
           <h1 className="text-4xl font-bold mb-2 text-gray-100">
@@ -130,7 +131,9 @@ export default function RestaurantDetailPage() {
             />
           </div>
           <div className="space-y-4">
-            <p className="text-gray-200">{restaurant.genre.catch}</p>
+            <p className="text-gray-200 break-words">
+              {restaurant.genre.catch}
+            </p>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{restaurant.genre.name}</Badge>
               <Badge variant="secondary">{restaurant.budget.name}</Badge>
@@ -140,11 +143,11 @@ export default function RestaurantDetailPage() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-100">住所</h3>
-              <p className="text-gray-300">{restaurant.address}</p>
+              <p className="text-gray-300 break-words">{restaurant.address}</p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-100">アクセス</h3>
-              <p className="text-gray-300">{restaurant.access}</p>
+              <p className="text-gray-300 break-words">{restaurant.access}</p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-100">営業時間</h3>
@@ -178,104 +181,156 @@ export default function RestaurantDetailPage() {
           <CardHeader>
             <CardTitle className="text-gray-100">詳細</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4 text-gray-300">
-            <div className="flex items-center gap-2">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-gray-300">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">総席数:</span>{" "}
-              {restaurant.capacity}
+              <span className="break-words whitespace-normal max-w-full">
+                {restaurant.capacity}
+              </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">最大収容人数:</span>{" "}
-              {restaurant.party_capacity}
+              <span className="break-words whitespace-normal max-w-full">
+                {restaurant.party_capacity}
+              </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">Wi-Fi:</span>{" "}
               <Badge
                 variant={restaurant.wifi === "あり" ? "default" : "outline"}
+                className={cn(
+                  "break-words whitespace-normal max-w-full",
+                  restaurant.wifi !== "あり" &&
+                    "border-gray-400 text-gray-100 bg-gray-700/40"
+                )}
               >
                 {restaurant.wifi}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">コース:</span>{" "}
               <Badge
                 variant={restaurant.course === "あり" ? "default" : "outline"}
+                className={cn(
+                  "break-words whitespace-normal max-w-full",
+                  restaurant.course !== "あり" &&
+                    "border-gray-400 text-gray-100 bg-gray-700/40"
+                )}
               >
                 {restaurant.course}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">飲み放題:</span>{" "}
               <Badge
                 variant={
                   restaurant.free_drink === "あり" ? "default" : "outline"
                 }
+                className={cn(
+                  "break-words whitespace-normal max-w-full",
+                  restaurant.free_drink !== "あり" &&
+                    "border-gray-400 text-gray-100 bg-gray-700/40"
+                )}
               >
                 {restaurant.free_drink}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">食べ放題:</span>{" "}
               <Badge
                 variant={
                   restaurant.free_food === "あり" ? "default" : "outline"
                 }
+                className={cn(
+                  "break-words whitespace-normal max-w-full",
+                  restaurant.free_food !== "あり" &&
+                    "border-gray-400 text-gray-100 bg-gray-700/40"
+                )}
               >
                 {restaurant.free_food}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">個室:</span>{" "}
               <Badge
                 variant={
                   restaurant.private_room === "あり" ? "default" : "outline"
                 }
+                className={cn(
+                  "break-words whitespace-normal max-w-full",
+                  restaurant.private_room !== "あり" &&
+                    "border-gray-400 text-gray-100 bg-gray-700/40"
+                )}
               >
                 {restaurant.private_room}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">掘りごたつ:</span>{" "}
               <Badge
                 variant={
                   restaurant.horigotatsu === "あり" ? "default" : "outline"
                 }
+                className={cn(
+                  "break-words whitespace-normal max-w-full",
+                  restaurant.horigotatsu !== "あり" &&
+                    "border-gray-400 text-gray-100 bg-gray-700/40"
+                )}
               >
                 {restaurant.horigotatsu}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">座敷:</span>{" "}
               <Badge
                 variant={restaurant.tatami === "あり" ? "default" : "outline"}
+                className={cn(
+                  "break-words whitespace-normal max-w-full",
+                  restaurant.tatami !== "あり" &&
+                    "border-gray-400 text-gray-100 bg-gray-700/40"
+                )}
               >
                 {restaurant.tatami}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">
                 クレジットカード:
               </span>{" "}
               <Badge
                 variant={restaurant.card === "利用可" ? "default" : "outline"}
+                className={cn(
+                  "break-words whitespace-normal max-w-full",
+                  restaurant.card !== "利用可" &&
+                    "border-gray-400 text-gray-100 bg-gray-700/40"
+                )}
               >
                 {restaurant.card}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">禁煙席:</span>{" "}
-              <Badge>{restaurant.non_smoking}</Badge>
+              <Badge className="break-words whitespace-normal max-w-full">
+                {restaurant.non_smoking}
+              </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">貸切:</span>{" "}
-              <Badge>{restaurant.charter}</Badge>
+              <Badge className="break-words whitespace-normal max-w-full">
+                {restaurant.charter}
+              </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">駐車場:</span>{" "}
-              <Badge>{restaurant.parking}</Badge>
+              <Badge className="break-words whitespace-normal max-w-full">
+                {restaurant.parking}
+              </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-semibold text-gray-100">バリアフリー:</span>{" "}
-              <Badge>{restaurant.barrier_free}</Badge>
+              <Badge className="break-words whitespace-normal max-w-full">
+                {restaurant.barrier_free}
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -298,11 +353,13 @@ export default function RestaurantDetailPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-grow">
-                      <h4 className="font-semibold text-lg text-gray-100">
+                      <h4 className="font-semibold text-lg text-gray-100 break-words">
                         {review.title}
                       </h4>
                       <div className="flex items-center text-sm text-gray-300">
-                        <span>{review.reviewer_name}</span>
+                        <span className="break-words whitespace-normal max-w-full">
+                          {review.reviewer_name}
+                        </span>
                         {review.is_gourmet_meister && (
                           <Badge
                             variant="outline"
@@ -317,7 +374,7 @@ export default function RestaurantDetailPage() {
                       {new Date(review.created_at).toLocaleDateString()}
                     </time>
                   </div>
-                  <p className="text-gray-200 whitespace-pre-wrap">
+                  <p className="text-gray-200 whitespace-pre-wrap break-words">
                     {review.body}
                   </p>
                 </div>
