@@ -100,18 +100,18 @@ export default function RestaurantsPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col md:flex-row">
       <aside className="w-full md:w-1/4 bg-gray-800 p-6 space-y-6">
-        <h2 className="text-2xl font-bold">Search</h2>
+        <h2 className="text-2xl font-bold">検索</h2>
         <form onSubmit={handleSearch} className="space-y-4">
           <Input
             type="text"
-            placeholder="Keyword..."
+            placeholder="キーワードを入力..."
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             className="bg-gray-700 border-gray-600"
           />
           <Select onValueChange={setBudget} value={budget}>
             <SelectTrigger className="bg-gray-700 border-gray-600">
-              <SelectValue placeholder="Budget" />
+              <SelectValue placeholder="予算を選択" />
             </SelectTrigger>
             <SelectContent className="bg-gray-700 text-white">
               <SelectItem value="B001">〜2000円</SelectItem>
@@ -124,7 +124,7 @@ export default function RestaurantsPage() {
           </Select>
           <Input
             type="number"
-            placeholder="Number of People"
+            placeholder="人数を入力"
             value={partyCapacity}
             onChange={(e) => setPartyCapacity(e.target.value)}
             className="bg-gray-700 border-gray-600"
@@ -134,23 +134,23 @@ export default function RestaurantsPage() {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700"
           >
-            Search
+            絞り込む
           </Button>
         </form>
       </aside>
 
       <main className="flex-1 p-6">
         <header className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold">Gourmet Navigator</h1>
-          <div className="flex items-center gap-1">
+          <h1 className="text-4xl font-bold">グルメナビゲーター</h1>
+          <div className="flex items-center gap-1 flex-wrap">
             <Link href="/restaurants/review" passHref>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                Post a Review
+              <Button className="bg-blue-600 hover:bg-blue-700 w-full">
+                レビューを書く
               </Button>
             </Link>
             <Link href="/schedule" passHref>
-              <Button className="bg-green-600 hover:bg-green-700">
-                Adjust Schedule
+              <Button className="bg-green-600 hover:bg-green-700 w-full">
+                日程調整を始める
               </Button>
             </Link>
           </div>
@@ -197,7 +197,7 @@ export default function RestaurantsPage() {
                       </p>
                     </CardContent>
                     <CardFooter className="mt-4 flex justify-between items-center">
-                      <Button size="sm">Been there!</Button>
+                      <Button size="sm">行った！</Button>
                       <span className="text-sm text-gray-400">0 Reviews</span>
                     </CardFooter>
                   </div>
