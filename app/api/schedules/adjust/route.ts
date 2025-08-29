@@ -1,45 +1,61 @@
 import { NextResponse } from 'next/server';
 
-// Define input data structure from the frontend
+// --- Type Definitions ---
+
+// Frontend Request
 interface ScheduleRequest {
   scheduleData: { [key: string]: string }[];
   priorityUsers: string[];
 }
 
-// Define the structure for a single date's availability
-interface DateAvailability {
-  date: string;
-  available: string[];
-  maybe: string[];
-  unavailable: string[];
-  score: number;
-}
-
+// Availability Calculation
 interface AvailabilityDetails {
   available: string[];
   maybe: string[];
   unavailable: string[];
 }
 
+interface DateAvailability extends AvailabilityDetails {
+  date: string;
+  score: number;
+}
+
+// Hot Pepper API Response (Shop Object)
+interface HotPepperShop {
+  id: string;
+  name: string;
+  urls: { pc: string; };
+  photo: { pc: { l: string; }; };
+  budget: { name: string; };
+  genre: { name: string; };
+  catch: string;
+  address: string;
+  party_capacity: number; // Note: API returns string, but we might use number
+}
+
+// Result for each genre fetch
+interface GenreFetchResult {
+  genreName: string;
+  genreCode: string;
+  restaurants: HotPepperShop[];
+}
+
+
 // --- Core Logic ---
 
-// 1. Transform raw CSV data into a structured format by date
+// 1. Transform raw CSV data
 function transformSchedule(rawData: { [key: string]: string }[]): Map<string, AvailabilityDetails> {
   const scheduleByDate = new Map<string, AvailabilityDetails>();
-
   rawData.forEach(row => {
     const name = row['名前'];
     if (!name) return;
-
     Object.keys(row).forEach(key => {
       if (key !== '名前') {
         const date = key;
         const status = row[key];
-
         if (!scheduleByDate.has(date)) {
           scheduleByDate.set(date, { available: [], maybe: [], unavailable: [] });
         }
-
         const current = scheduleByDate.get(date)!;
         if (status === '○' || status === '◯') current.available.push(name);
         else if (status === '△') current.maybe.push(name);
@@ -47,64 +63,74 @@ function transformSchedule(rawData: { [key: string]: string }[]): Map<string, Av
       }
     });
   });
-
   return scheduleByDate;
 }
 
-// 2. Score each date based on the priority logic
+// 2. Score each date
 function scoreDates(schedule: Map<string, AvailabilityDetails>, priorityUsers: string[]): DateAvailability[] {
   const scoredDates: DateAvailability[] = [];
-
   schedule.forEach((details, date) => {
     let score = 0;
-
-    // Priority 1: High bonus if all priority users are available
     const priorityUsersAvailable = priorityUsers.every(user => details.available.includes(user));
     if (priorityUsers.length > 0 && priorityUsersAvailable) {
       score += 1000;
     }
-
-    // Priority 2: Add score based on number of available people
     score += details.available.length;
-
-    // Priority 3: Subtract a small amount for unavailable people
     score -= details.unavailable.length * 0.1;
-
     scoredDates.push({ date, ...details, score });
   });
-
-  // Sort by score, descending
   return scoredDates.sort((a, b) => b.score - a.score);
 }
 
-// 3. Fetch restaurant recommendations from Hot Pepper API
-async function fetchRestaurants(attendeeCount: number) {
-  if (attendeeCount === 0) return [];
-  try {
-    const apiKey = process.env.HOTPEPPER_API_KEY;
-    if (!apiKey) throw new Error('API key is not configured');
+// 3. Fetch restaurant recommendations by genre
+const TARGET_GENRES = [
+    { code: 'G001', name: '居酒屋' },
+    { code: 'G007', name: '中華' },
+    { code: 'G006', name: 'イタリアン・フレンチ' },
+    { code: 'G008', name: '焼肉・ホルモン' },
+    { code: 'G004', name: '和食' },
+    { code: 'G005', name: '洋食' },
+];
 
-    // Construct search URL (example: search for Izakaya in Tokyo with required capacity)
+async function fetchRestaurantsByGenre(attendeeCount: number): Promise<GenreFetchResult[]> {
+  if (attendeeCount === 0) return [];
+  
+  const apiKey = process.env.HOTPEPPER_API_KEY;
+  if (!apiKey) {
+    console.error('API key is not configured');
+    return [];
+  }
+
+  const genrePromises = TARGET_GENRES.map(genre => {
     const params = new URLSearchParams({
       key: apiKey,
       format: 'json',
-      count: '5', // Get 5 recommendations
-      person_num: attendeeCount.toString(),
+      count: '6',
+      party_capacity: attendeeCount.toString(),
       keyword: '沖縄県那覇市',
-      genre: 'G001', // Example: Izakaya genre
+      genre: genre.code,
     });
-    const response = await fetch(`http://webservice.recruit.co.jp/hotpepper/gourmet/v1/?${params}`);
-    
-    if (!response.ok) throw new Error('Failed to fetch from Hot Pepper API');
+    return fetch(`http://webservice.recruit.co.jp/hotpepper/gourmet/v1/?${params}`)
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to fetch genre ${genre.name}`);
+        return res.json();
+      })
+      .then(data => ({
+        genreName: genre.name,
+        genreCode: genre.code,
+        restaurants: data.results.shop || []
+      } as GenreFetchResult));
+  });
 
-    const data = await response.json();
-    return data.results.shop || [];
+  const results = await Promise.allSettled(genrePromises);
 
-  } catch (error) {
-    console.error('Restaurant fetch error:', error);
-    return []; // Return empty array on error, so it doesn't break the whole flow
-  }
+  return results
+    .filter((result): result is PromiseFulfilledResult<GenreFetchResult> => 
+        result.status === 'fulfilled' && result.value.restaurants.length > 0
+    )
+    .map(result => result.value);
 }
+
 
 // --- API Route Handler ---
 
@@ -117,7 +143,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid schedule data' }, { status: 400 });
     }
 
-    // Execute the logic pipeline
     const transformed = transformSchedule(scheduleData);
     const rankedDates = scoreDates(transformed, priorityUsers);
 
@@ -126,23 +151,20 @@ export async function POST(request: Request) {
     }
 
     const topOption = rankedDates[0];
-    const otherOptions = rankedDates.slice(1, 4); // Return up to 3 other options
+    const otherOptions = rankedDates.slice(1, 4);
 
-    // Fetch restaurants for the top option
-    const restaurants = await fetchRestaurants(topOption.available.length);
+    const restaurantsByGenre = await fetchRestaurantsByGenre(topOption.available.length);
 
-    // Generate suggestion text
     let suggestionText = `参加人数が最も多い${topOption.date}がおすすめです。`;
     if (priorityUsers.length > 0 && priorityUsers.every(u => topOption.available.includes(u))) {
         suggestionText = `${priorityUsers.join('さん, ')}さんが参加可能で、最も人数が多い${topOption.date}がおすすめです。`;
     }
 
-    // Construct the final rich response
     const response = {
       topRecommendation: {
         ...topOption,
         suggestionText,
-        restaurants,
+        restaurantsByGenre,
       },
       otherOptions,
     };
@@ -151,6 +173,7 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

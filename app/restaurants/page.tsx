@@ -21,6 +21,8 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 
+import { cn } from "@/lib/utils";
+
 // Define the types for the API response
 interface Shop {
   id: string;
@@ -41,6 +43,11 @@ interface Shop {
   party_capacity: string;
 }
 
+interface ApiResults {
+  results_available: string;
+  shop: Shop[];
+}
+
 export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<Shop[]>([]);
   const [keyword, setKeyword] = useState("");
@@ -48,49 +55,63 @@ export default function RestaurantsPage() {
   const [genre, setGenre] = useState("");
   const [partyCapacity, setPartyCapacity] = useState("");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const resultsPerPage = 20;
 
-  const fetchRestaurants = useCallback(async () => {
+  const fetchRestaurants = useCallback(async (page: number) => {
     setLoading(true);
-    let query = `keyword=${encodeURIComponent(keyword)}`;
+    const start = (page - 1) * resultsPerPage + 1;
+    let query = `keyword=${encodeURIComponent(keyword)}&count=${resultsPerPage}&start=${start}`;
     if (budget) query += `&budget=${budget}`;
     if (genre) query += `&genre=${genre}`;
     if (partyCapacity) query += `&party_capacity=${partyCapacity}`;
 
     try {
       const response = await fetch(`/api/restaurants/search?${query}`);
-      const data = await response.json();
+      const data: ApiResults = await response.json();
       setRestaurants(data.shop || []);
+      setTotalResults(parseInt(data.results_available, 10) || 0);
     } catch (error) {
       console.error("Failed to fetch restaurants:", error);
+      setRestaurants([]);
+      setTotalResults(0);
     }
     setLoading(false);
   }, [keyword, budget, genre, partyCapacity]);
 
   useEffect(() => {
-    fetchRestaurants();
-    setGenre("");
-  }, [fetchRestaurants]);
+    fetchRestaurants(currentPage);
+  }, [fetchRestaurants, currentPage]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchRestaurants();
+    setCurrentPage(1); // Reset to first page on new search
+    fetchRestaurants(1);
   };
+
+  const handlePageChange = (newPage: number) => {
+    window.scrollTo(0, 0);
+    setCurrentPage(newPage);
+  };
+
+  const totalPages = Math.ceil(totalResults / resultsPerPage);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col md:flex-row">
       <aside className="w-full md:w-1/4 bg-gray-800 p-6 space-y-6">
-        <h2 className="text-2xl font-bold">Search</h2>
+        <h2 className="text-2xl font-bold">検索</h2>
         <form onSubmit={handleSearch} className="space-y-4">
           <Input
             type="text"
-            placeholder="Keyword..."
+            placeholder="キーワードを入力..."
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             className="bg-gray-700 border-gray-600"
           />
           <Select onValueChange={setBudget} value={budget}>
             <SelectTrigger className="bg-gray-700 border-gray-600">
-              <SelectValue placeholder="Budget" />
+              <SelectValue placeholder="予算を選択" />
             </SelectTrigger>
             <SelectContent className="bg-gray-700 text-white">
               <SelectItem value="B001">〜2000円</SelectItem>
@@ -103,7 +124,7 @@ export default function RestaurantsPage() {
           </Select>
           <Input
             type="number"
-            placeholder="Number of People"
+            placeholder="人数を入力"
             value={partyCapacity}
             onChange={(e) => setPartyCapacity(e.target.value)}
             className="bg-gray-700 border-gray-600"
@@ -113,35 +134,35 @@ export default function RestaurantsPage() {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700"
           >
-            Search
+            絞り込む
           </Button>
         </form>
       </aside>
 
       <main className="flex-1 p-6">
         <header className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold">Gourmet Navigator</h1>
-          <div className="flex items-center gap-1">
+          <h1 className="text-4xl font-bold">グルメナビゲーター</h1>
+          <div className="flex items-center gap-1 flex-wrap">
             <Link href="/restaurants/review" passHref>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                Post a Review
+              <Button className="bg-blue-600 hover:bg-blue-700 w-full">
+                レビューを書く
               </Button>
             </Link>
             <Link href="/schedule" passHref>
-              <Button className="bg-green-600 hover:bg-green-700">
-                Adjust Schedule
+              <Button className="bg-green-600 hover:bg-green-700 w-full">
+                日程調整を始める
               </Button>
             </Link>
           </div>
         </header>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <p>Loading...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {restaurants.map((shop) => (
+        <div
+          className={cn(
+            "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity",
+            { "opacity-50": loading },
+          )}
+        >
+          {restaurants.map((shop) => (
               <Card
                 key={shop.id}
                 className="bg-gray-800 border-gray-700 overflow-hidden"
@@ -176,7 +197,7 @@ export default function RestaurantsPage() {
                       </p>
                     </CardContent>
                     <CardFooter className="mt-4 flex justify-between items-center">
-                      <Button size="sm">Been there!</Button>
+                      <Button size="sm">行った！</Button>
                       <span className="text-sm text-gray-400">0 Reviews</span>
                     </CardFooter>
                   </div>
@@ -184,7 +205,25 @@ export default function RestaurantsPage() {
               </Card>
             ))}
           </div>
-        )}
+
+        {/* Pagination Controls */}
+        <div className="flex justify-center items-center mt-8 space-x-4">
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || loading}
+          >
+            前へ
+          </Button>
+          <span className="text-gray-300">
+            ページ {currentPage} / {totalPages}
+          </span>
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages || loading}
+          >
+            次へ
+          </Button>
+        </div>
       </main>
     </div>
   );
