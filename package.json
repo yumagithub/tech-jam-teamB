@@ -22,7 +22,7 @@
     "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
     "lucide-react": "^0.542.0",
-    "next": "15.4.7",
+    "next": "15.4.10",
     "papaparse": "^5.5.3",
     "postgres": "^3.4.7",
     "react": "19.1.0",
